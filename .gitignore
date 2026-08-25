@@ -1,0 +1,17 @@
+# Compiled Java class files
+*.class
+
+# Log files
+*.log
+
+# IntelliJ IDEA specific files/folders
+.idea/
+*.iws
+*.iml
+*.ipr
+out/
+
+# Build tool folders (Adding these now covers you whether you choose Maven or Gradle later)
+target/
+build/
+.gradle/

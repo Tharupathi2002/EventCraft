@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: pageHead(${summary.budget.eventName})}"></head>
+<body>
+<nav th:replace="~{fragments/layout :: navbar}"></nav>
+<div th:replace="~{fragments/layout :: alerts}"></div>
+
+<div class="container pb-5">
+
+    <div class="d-flex justify-content-between align-items-start mb-3 flex-wrap gap-2">
+        <div>
+            <h2 class="mb-0" th:text="${summary.budget.eventName}">Event Name</h2>
+            <div class="text-muted small" th:text="'Event ID: ' + ${summary.budget.eventId}">Event ID</div>
+        </div>
+        <div>
+            <a class="btn btn-outline-secondary btn-sm" th:href="@{/budgets/{id}/edit(id=${summary.budget.id})}">Edit Budget</a>
+            <form id="deleteBudgetForm" th:action="@{/budgets/{id}/delete(id=${summary.budget.id})}" method="post" class="d-none"></form>
+            <button type="button" class="btn btn-outline-danger btn-sm js-confirm-delete"
+                    data-form-id="deleteBudgetForm"
+                    data-item-name="Delete this budget and all its expenses? This cannot be undone.">
+                Delete Budget
+            </button>
+        </div>
+    </div>
+
+    <div class="alert alert-danger" th:if="${summary.overBudget}">
+        <strong>Over budget.</strong> Spending has exceeded the allocated budget by
+        <span th:text="${'LKR ' + #numbers.formatDecimal(summary.remainingBalance.abs(), 1, 'COMMA', 2, 'POINT')}"></span>.
+    </div>
+
+    <div class="alert alert-warning d-flex justify-content-between align-items-center flex-wrap gap-2"
+         th:if="${paymentSummary.unpaidCount gt 0}">
+        <span th:text="${paymentSummary.unpaidCount + ' expense(s) still unpaid, totaling LKR ' + #numbers.formatDecimal(paymentSummary.totalUnpaid, 1, 'COMMA', 2, 'POINT') + '.'}"></span>
+        <button type="button" class="btn btn-sm btn-dark js-go-to-summary-tab">
+            Go to Payments
+        </button>
+    </div>
+
+    <div class="row g-3 mb-4">
+        <div class="col-md-4">
+            <div class="card h-100">
+                <div class="card-body">
+                    <div class="text-muted small text-uppercase">Total Budget</div>
+                    <div class="fs-3 fw-semibold" th:text="${'LKR ' + #numbers.formatDecimal(summary.budget.totalBudget, 1, 'COMMA', 2, 'POINT')}">LKR 0</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card h-100">
+                <div class="card-body">
+                    <div class="text-muted small text-uppercase">Total Spent</div>
+                    <div class="fs-3 fw-semibold" th:text="${'LKR ' + #numbers.formatDecimal(summary.totalSpent, 1, 'COMMA', 2, 'POINT')}">LKR 0</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card h-100" th:classappend="${summary.overBudget} ? 'border-danger' : ''">
+                <div class="card-body">
+                    <div class="text-muted small text-uppercase">Remaining Balance</div>
+                    <div class="fs-3 fw-semibold" th:classappend="${summary.overBudget} ? 'text-danger' : 'text-success'"
+                         th:text="${'LKR ' + #numbers.formatDecimal(summary.remainingBalance, 1, 'COMMA', 2, 'POINT')}">LKR 0</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="mb-4">
+        <div class="d-flex justify-content-between small text-muted mb-1">
+            <span>Budget used</span>
+            <span th:text="${summary.percentUsed} + '%'">0%</span>
+        </div>
+        <div class="progress" style="height: 14px;">
+            <div class="progress-bar" th:classappend="${summary.overBudget} ? 'bg-danger' : 'bg-success'"
+                 role="progressbar" th:style="'width: ' + ${summary.percentUsedCapped} + '%'"
+                 th:text="${summary.percentUsed} + '%'"></div>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header d-flex justify-content-between align-items-center flex-wrap gap-2">
+            <ul class="nav nav-tabs card-header-tabs" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button id="expenses-tab-link" class="nav-link active" data-bs-toggle="tab"
+                            data-bs-target="#expenses-pane" type="button" role="tab">Expenses</button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button id="summary-tab-link" class="nav-link" data-bs-toggle="tab"
+                            data-bs-target="#summary-pane" type="button" role="tab">
+                        Summary
+                        <span th:if="${paymentSummary.unpaidCount gt 0}" class="badge text-bg-warning ms-1"
+                              th:text="${paymentSummary.unpaidCount}">0</span>
+                    </button>
+                </li>
+            </ul>
+            <a class="btn btn-sm btn-primary" th:href="@{/budgets/{id}/expenses/new(id=${summary.budget.id})}">Add Expense</a>
+        </div>
+
+        <div class="tab-content">
+            <div class="tab-pane fade show active" id="expenses-pane" role="tabpanel">
+
+                <div class="card-body border-bottom">
+                    <form th:action="@{/budgets/{id}/expenses(id=${summary.budget.id})}" method="get" class="row g-2">
+                        <div class="col-sm-5">
+                            <input type="text" name="keyword" class="form-control form-control-sm"
+                                   placeholder="Search expenses" th:value="${keyword}"/>
+                        </div>
+                        <div class="col-sm-4">
+                            <select name="category" class="form-select form-select-sm" onchange="this.form.submit()">
+                                <option value="">All categories</option>
+                                <option th:each="c : ${categories}" th:value="${c}"
+                                        th:selected="${selectedCategory != null and selectedCategory == c}"
+                                        th:text="${c}"></option>
+                            </select>
+                        </div>
+                        <div class="col-sm-3">
+                            <button type="submit" class="btn btn-sm btn-outline-secondary w-100">Filter</button>
+                        </div>
+                    </form>
+                </div>
+
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead>
+                        <tr>
+                            <th>Description</th>
+                            <th>Category</th>
+                            <th>Date</th>
+                            <th class="text-end">Amount</th>
+                            <th>Payment</th>
+                            <th class="text-end">Actions</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr th:each="expense : ${expenses}">
+                            <td th:text="${expense.description}">Description</td>
+                            <td><span class="badge text-bg-light" th:text="${expense.category}">Category</span></td>
+                            <td th:text="${expense.expenseDate}">Date</td>
+                            <td class="text-end" th:text="${'LKR ' + #numbers.formatDecimal(expense.amount, 1, 'COMMA', 2, 'POINT')}">LKR 0</td>
+                            <td>
+                                <span th:if="${expense.paid}" class="badge text-bg-success">Paid</span>
+                                <span th:unless="${expense.paid}" class="badge text-bg-secondary">Unpaid</span>
+                            </td>
+                            <td class="text-end text-nowrap">
+                                <a th:unless="${expense.paid}" class="btn btn-sm btn-success"
+                                   th:href="@{/budgets/{bid}/expenses/{eid}/pay(bid=${summary.budget.id},eid=${expense.id})}">Pay</a>
+                                <form th:if="${expense.paid}" th:id="'markUnpaidForm' + ${expense.id}" class="d-inline"
+                                      th:action="@{/budgets/{bid}/expenses/{eid}/mark-unpaid(bid=${summary.budget.id},eid=${expense.id})}"
+                                      method="post"></form>
+                                <button th:if="${expense.paid}" type="button" class="btn btn-sm btn-outline-secondary js-confirm-delete"
+                                        th:attr="data-form-id='markUnpaidForm' + ${expense.id}"
+                                        data-item-name="Mark this expense as unpaid again?">
+                                    Mark Unpaid
+                                </button>
+                                <a class="btn btn-sm btn-outline-secondary"
+                                   th:href="@{/budgets/{bid}/expenses/{eid}/edit(bid=${summary.budget.id},eid=${expense.id})}">Edit</a>
+                                <form th:id="'deleteExpenseForm' + ${expense.id}" class="d-none"
+                                      th:action="@{/budgets/{bid}/expenses/{eid}/delete(bid=${summary.budget.id},eid=${expense.id})}"
+                                      method="post"></form>
+                                <button type="button" class="btn btn-sm btn-danger js-confirm-delete"
+                                        th:attr="data-form-id='deleteExpenseForm' + ${expense.id}"
+                                        data-item-name="Delete this expense? This cannot be undone.">
+                                    Delete
+                                </button>
+                            </td>
+                        </tr>
+                        <tr th:if="${#lists.isEmpty(expenses)}">
+                            <td colspan="6" class="text-center text-muted py-4">No expenses recorded yet.</td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="tab-pane fade" id="summary-pane" role="tabpanel">
+                <div class="card-body">
+
+                    <h6 class="text-uppercase text-muted small mb-3">Payment Overview</h6>
+                    <div class="row g-3 mb-4">
+                        <div class="col-sm-6">
+                            <div class="border rounded p-3 h-100">
+                                <div class="text-muted small">Paid</div>
+                                <div class="fs-4 fw-semibold text-success"
+                                     th:text="${'LKR ' + #numbers.formatDecimal(paymentSummary.totalPaid, 1, 'COMMA', 2, 'POINT')}">LKR 0</div>
+                                <div class="small text-muted" th:text="${paymentSummary.paidCount} + ' expense(s)'">0 expense(s)</div>
+                            </div>
+                        </div>
+                        <div class="col-sm-6">
+                            <div class="border rounded p-3 h-100">
+                                <div class="text-muted small">Unpaid</div>
+                                <div class="fs-4 fw-semibold text-danger"
+                                     th:text="${'LKR ' + #numbers.formatDecimal(paymentSummary.totalUnpaid, 1, 'COMMA', 2, 'POINT')}">LKR 0</div>
+                                <div class="small text-muted" th:text="${paymentSummary.unpaidCount} + ' expense(s)'">0 expense(s)</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <h6 class="text-uppercase text-muted small mb-3">Pending Payments</h6>
+                    <div class="table-responsive mb-3">
+                        <table class="table table-sm align-middle">
+                            <thead>
+                            <tr>
+                                <th>Description</th>
+                                <th>Category</th>
+                                <th class="text-end">Amount</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <tr th:each="expense : ${unpaidExpenses}">
+                                <td th:text="${expense.description}">Description</td>
+                                <td><span class="badge text-bg-light" th:text="${expense.category}">Category</span></td>
+                                <td class="text-end" th:text="${'LKR ' + #numbers.formatDecimal(expense.amount, 1, 'COMMA', 2, 'POINT')}">LKR 0</td>
+                            </tr>
+                            <tr th:if="${#lists.isEmpty(unpaidExpenses)}">
+                                <td colspan="3" class="text-center text-muted py-3">Nothing pending.</td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="d-flex justify-content-between align-items-center mb-4" th:if="${paymentSummary.unpaidCount gt 0}">
+                        <div>
+                            Total due:
+                            <strong th:text="${'LKR ' + #numbers.formatDecimal(paymentSummary.totalUnpaid, 1, 'COMMA', 2, 'POINT')}">LKR 0</strong>
+                        </div>
+                        <a class="btn btn-success" th:href="@{/budgets/{id}/expenses/pay-all(id=${summary.budget.id})}">Pay All Now</a>
+                    </div>
+
+                    <h6 class="text-uppercase text-muted small mb-3">Spending by Category</h6>
+                    <div class="table-responsive mb-4">
+                        <table class="table table-sm align-middle">
+                            <thead>
+                            <tr>
+                                <th>Category</th>
+                                <th class="text-end">Spent</th>
+                                <th class="text-end">Percent of Total Budget</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <tr th:each="ct : ${categoryTotals}">
+                                <td th:text="${ct.category}">Category</td>
+                                <td class="text-end" th:text="${'LKR ' + #numbers.formatDecimal(ct.spent, 1, 'COMMA', 2, 'POINT')}">LKR 0</td>
+                                <td class="text-end" th:text="${ct.percentOfBudget} + '%'">0%</td>
+                            </tr>
+                            <tr th:if="${#lists.isEmpty(categoryTotals)}">
+                                <td colspan="3" class="text-center text-muted py-3">No expenses recorded yet.</td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <h6 class="text-uppercase text-muted small mb-3">All Expenses</h6>
+                    <div class="table-responsive">
+                        <table class="table table-sm align-middle">
+                            <thead>
+                            <tr>
+                                <th>Description</th>
+                                <th>Category</th>
+                                <th>Date</th>
+                                <th class="text-end">Amount</th>
+                                <th>Payment</th>
+                                <th class="text-end">Action</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <tr th:each="expense : ${expenses}">
+                                <td th:text="${expense.description}">Description</td>
+                                <td><span class="badge text-bg-light" th:text="${expense.category}">Category</span></td>
+                                <td th:text="${expense.expenseDate}">Date</td>
+                                <td class="text-end" th:text="${'LKR ' + #numbers.formatDecimal(expense.amount, 1, 'COMMA', 2, 'POINT')}">LKR 0</td>
+                                <td>
+                                    <span th:if="${expense.paid}" class="badge text-bg-success">Paid</span>
+                                    <span th:unless="${expense.paid}" class="badge text-bg-secondary">Unpaid</span>
+                                </td>
+                                <td class="text-end">
+                                    <a th:unless="${expense.paid}" class="btn btn-sm btn-success"
+                                       th:href="@{/budgets/{bid}/expenses/{eid}/pay(bid=${summary.budget.id},eid=${expense.id})}">Pay Now</a>
+                                </td>
+                            </tr>
+                            <tr th:if="${#lists.isEmpty(expenses)}">
+                                <td colspan="6" class="text-center text-muted py-3">No expenses recorded yet.</td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div th:replace="~{fragments/layout :: deleteConfirmModal}"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<th:block th:replace="~{fragments/layout :: deleteConfirmScript}"></th:block>
+</body>
+</html>

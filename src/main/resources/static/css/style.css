@@ -1,0 +1,11 @@
+/*
+ * Deliberately minimal -- plain Bootstrap defaults with only small
+ * readability tweaks. Easy to restyle once this module is wired up with
+ * the rest of EventCraft's other modules.
+ */
+
+.table th {
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    color: #6c757d;
+}

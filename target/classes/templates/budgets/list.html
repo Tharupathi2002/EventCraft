@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: pageHead('All Budgets')}"></head>
+<body>
+<nav th:replace="~{fragments/layout :: navbar}"></nav>
+<div th:replace="~{fragments/layout :: alerts}"></div>
+
+<div class="container">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h2 class="mb-0">Event Budgets</h2>
+        <a class="btn btn-primary" th:href="@{/budgets/new}">New Budget</a>
+    </div>
+
+    <div th:if="${#lists.isEmpty(budgets)}" class="card">
+        <div class="card-body text-center text-muted py-5">
+            No budgets yet. Click "New Budget" to plan your first event's finances.
+        </div>
+    </div>
+
+    <div class="row row-cols-1 row-cols-md-2 g-3" th:unless="${#lists.isEmpty(budgets)}">
+        <div class="col" th:each="budget : ${budgets}">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h5 class="card-title" th:text="${budget.eventName}">Event Name</h5>
+                    <p class="card-text text-muted mb-1" th:text="'Event ID: ' + ${budget.eventId}">Event ID</p>
+                    <p class="card-text text-muted mb-1">
+                        Total Budget:
+                        <strong th:text="${'LKR ' + #numbers.formatDecimal(budget.totalBudget, 1, 'COMMA', 2, 'POINT')}">LKR 0.00</strong>
+                    </p>
+                    <p class="card-text text-muted small">
+                        Created <span th:text="${budget.createdDate}">date</span>
+                    </p>
+                    <a class="btn btn-outline-primary btn-sm" th:href="@{/budgets/{id}(id=${budget.id})}">View Dashboard</a>
+                    <a class="btn btn-outline-secondary btn-sm" th:href="@{/budgets/{id}/edit(id=${budget.id})}">Edit</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

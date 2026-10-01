@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: pageHead('Pay All')}"></head>
+<body>
+<nav th:replace="~{fragments/layout :: navbar}"></nav>
+
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+
+            <div class="alert alert-warning">
+                <strong>Test mode.</strong> No real payment gateway is contacted and no money moves.
+                Any well-formed card number is approved; a card ending in
+                <code>0002</code> is always declined, for testing that path.
+            </div>
+
+            <div class="alert alert-danger" th:if="${declineReason}">
+                <strong>Payment declined:</strong> <span th:text="${declineReason}"></span>
+            </div>
+
+            <div class="card">
+                <div class="card-body">
+                    <h4 class="card-title mb-1">Pay All Pending Expenses</h4>
+                    <p class="text-muted small mb-3" th:text="'For: ' + ${budget.eventName}"></p>
+
+                    <div class="border rounded p-3 mb-3 bg-light">
+                        <div th:each="expense : ${unpaidExpenses}" class="d-flex justify-content-between small mb-1">
+                            <span th:text="${expense.description} + ' (' + ${expense.category} + ')'"></span>
+                            <span th:text="${'LKR ' + #numbers.formatDecimal(expense.amount, 1, 'COMMA', 2, 'POINT')}"></span>
+                        </div>
+                        <hr class="my-2"/>
+                        <div class="d-flex justify-content-between fw-semibold">
+                            <span th:text="${paymentSummary.unpaidCount} + ' expense(s) total'">Total</span>
+                            <span th:text="${'LKR ' + #numbers.formatDecimal(paymentSummary.totalUnpaid, 1, 'COMMA', 2, 'POINT')}"></span>
+                        </div>
+                    </div>
+
+                    <form th:action="@{/budgets/{bid}/expenses/pay-all(bid=${budget.id})}"
+                          th:object="${paymentRequest}" method="post">
+
+                        <div class="mb-3">
+                            <label class="form-label">Cardholder Name</label>
+                            <input type="text" class="form-control" th:field="*{cardHolderName}" placeholder="Jane Doe"/>
+                            <div class="text-danger small" th:if="${#fields.hasErrors('cardHolderName')}" th:errors="*{cardHolderName}"></div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Card Number</label>
+                            <input type="text" class="form-control" th:field="*{cardNumber}"
+                                   placeholder="4242 4242 4242 4242" maxlength="19"/>
+                            <div class="text-danger small" th:if="${#fields.hasErrors('cardNumber')}" th:errors="*{cardNumber}"></div>
+                            <div class="form-text">Try <code>4242 4242 4242 4242</code> to approve, or
+                                <code>4000 0000 0000 0002</code> to see a decline.</div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-4 mb-3">
+                                <label class="form-label">Exp. Month</label>
+                                <input type="text" class="form-control" th:field="*{expiryMonth}" placeholder="09" maxlength="2"/>
+                                <div class="text-danger small" th:if="${#fields.hasErrors('expiryMonth')}" th:errors="*{expiryMonth}"></div>
+                            </div>
+                            <div class="col-4 mb-3">
+                                <label class="form-label">Exp. Year</label>
+                                <input type="text" class="form-control" th:field="*{expiryYear}" placeholder="27" maxlength="2"/>
+                                <div class="text-danger small" th:if="${#fields.hasErrors('expiryYear')}" th:errors="*{expiryYear}"></div>
+                            </div>
+                            <div class="col-4 mb-3">
+                                <label class="form-label">CVV</label>
+                                <input type="text" class="form-control" th:field="*{cvv}" placeholder="123" maxlength="4"/>
+                                <div class="text-danger small" th:if="${#fields.hasErrors('cvv')}" th:errors="*{cvv}"></div>
+                            </div>
+                        </div>
+
+                        <div class="d-flex justify-content-between mt-2">
+                            <a class="btn btn-outline-secondary" th:href="@{/budgets/{id}(id=${budget.id})}">Cancel</a>
+                            <button type="submit" class="btn btn-success">Pay All Now</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

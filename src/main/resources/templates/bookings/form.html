@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>New Booking - EventCraft</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+
+<div class="app-container">
+    <div th:replace="~{layout/sidebar :: sidebar('bookings')}"></div>
+
+    <main class="main-wrapper">
+        <header class="top-header">
+            <div class="header-greeting">
+                <h1>Create New Booking Request</h1>
+                <p>Reserve a venue or vendor service for your upcoming event.</p>
+            </div>
+            <a th:href="@{/bookings}" class="btn-secondary"><i class="fa-solid fa-arrow-left"></i> Back to Bookings</a>
+        </header>
+
+        <div class="card" style="max-width: 800px; margin: 0 auto;">
+            <form th:action="@{/bookings/save}" th:object="${booking}" method="post">
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                    <div class="form-group">
+                        <label>Host Name *</label>
+                        <input type="text" th:field="*{hostName}" class="form-control" placeholder="Host full name">
+                        <div class="field-error" th:if="${#fields.hasErrors('hostName')}" th:errors="*{hostName}"></div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Host Email Address *</label>
+                        <input type="email" th:field="*{hostEmail}" class="form-control" placeholder="name@domain.com">
+                        <div class="field-error" th:if="${#fields.hasErrors('hostEmail')}" th:errors="*{hostEmail}"></div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Select Booking Target *</label>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                        <div>
+                            <label style="font-size: 0.8rem; color: var(--accent-amber);"><i class="fa-solid fa-building"></i> Select Venue</label>
+                            <select th:field="*{venueId}" class="form-control">
+                                <option value="">-- No Venue (Vendor Only) --</option>
+                                <option th:each="v : ${venues}" th:value="${v.venueId}" th:text="${v.name} + ' (LKR ' + ${v.ratePerDay} + ')'"></option>
+                            </select>
+                        </div>
+                        <div>
+                            <label style="font-size: 0.8rem; color: var(--accent-gold);"><i class="fa-solid fa-store"></i> Select Vendor</label>
+                            <select th:field="*{vendorId}" class="form-control">
+                                <option value="">-- No Vendor (Venue Only) --</option>
+                                <option th:each="v : ${vendors}" th:value="${v.vendorId}" th:text="${v.businessName} + ' - ' + ${v.serviceType} + ' (LKR ' + ${v.basePrice} + ')'"></option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                    <div class="form-group">
+                        <label>Target Event Date *</label>
+                        <input type="date" th:field="*{eventDate}" class="form-control">
+                        <div class="field-error" th:if="${#fields.hasErrors('eventDate')}" th:errors="*{eventDate}"></div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Booking Amount (LKR) *</label>
+                        <input type="number" step="0.01" th:field="*{amount}" class="form-control" placeholder="e.g. 1500.00">
+                        <div class="field-error" th:if="${#fields.hasErrors('amount')}" th:errors="*{amount}"></div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Special Requirements / Customization Notes</label>
+                    <textarea th:field="*{specialRequirements}" class="form-control" rows="4" placeholder="Specify catering preferences, stage size, timing..."></textarea>
+                </div>
+
+                <div style="display: flex; gap: 12px; justify-content: flex-end; margin-top: 20px;">
+                    <a th:href="@{/bookings}" class="btn-secondary">Cancel</a>
+                    <button type="submit" class="btn-primary"><i class="fa-solid fa-paper-plane"></i> Submit Booking Request</button>
+                </div>
+            </form>
+        </div>
+    </main>
+</div>
+
+<script th:src="@{/js/main.js}"></script>
+</body>
+</html>

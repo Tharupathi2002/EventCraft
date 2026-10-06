@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vendors - EventCraft</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+
+<div class="app-container">
+    <div th:replace="~{layout/sidebar :: sidebar('vendors')}"></div>
+
+    <main class="main-wrapper">
+        <header class="top-header">
+            <div class="header-greeting">
+                <h1>Vendor Service Directory</h1>
+                <p>Find and book caterers, photographers, decorators, sound system providers, and planners.</p>
+            </div>
+            <a th:href="@{/vendors/new}" class="btn-primary"><i class="fa-solid fa-plus"></i> Add New Vendor</a>
+        </header>
+
+        <!-- Flash Messages -->
+        <div th:if="${successMessage}" class="alert alert-success" th:text="${successMessage}"></div>
+        <div th:if="${errorMessage}" class="alert alert-danger" th:text="${errorMessage}"></div>
+
+        <!-- Filter Search Bar -->
+        <div class="card" style="padding: 16px;">
+            <form th:action="@{/vendors}" method="get" style="display: flex; gap: 16px; align-items: center; flex-wrap: wrap;">
+                <div class="search-box" style="flex: 1; min-width: 200px;">
+                    <i class="fa-solid fa-magnifying-glass"></i>
+                    <input type="text" name="keyword" th:value="${keyword}" placeholder="Search vendor name or service type..." style="width: 100%;">
+                </div>
+                <div style="min-width: 180px;">
+                    <select name="serviceType" class="form-control" style="padding: 10px 14px;">
+                        <option value="">All Service Types</option>
+                        <option value="Catering" th:selected="${serviceType == 'Catering'}">Catering</option>
+                        <option value="Photography" th:selected="${serviceType == 'Photography'}">Photography</option>
+                        <option value="Decor" th:selected="${serviceType == 'Decor'}">Decor &amp; Florals</option>
+                        <option value="Music/DJ" th:selected="${serviceType == 'Music/DJ'}">Music &amp; DJ</option>
+                    </select>
+                </div>
+                <button type="submit" class="btn-primary" style="padding: 10px 20px;"><i class="fa-solid fa-filter"></i> Filter</button>
+                <a th:href="@{/vendors}" class="btn-secondary" style="padding: 10px 16px;">Reset</a>
+            </form>
+        </div>
+
+        <!-- Vendors Cards Grid -->
+        <div class="cards-grid">
+            <div th:each="vendor : ${vendors}" class="item-card">
+                <img th:src="${vendor.imageUrl}" class="item-card-img" alt="Vendor Cover">
+                <div class="item-card-body">
+                    <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                        <a th:href="@{'/vendors/detail/' + ${vendor.vendorId}}" class="item-card-title" th:text="${vendor.businessName}">Aura Photography</a>
+                        <span class="badge" th:classappend="${#strings.toLowerCase(vendor.status)}" th:text="${vendor.status}">AVAILABLE</span>
+                    </div>
+                    <div class="item-card-sub"><i class="fa-solid fa-tag" style="color: var(--accent-gold);"></i> <span th:text="${vendor.serviceType}">Photography</span></div>
+                    <div style="font-size: 0.82rem; color: var(--text-muted); text-overflow: ellipsis; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;" th:text="${vendor.description}">Award-winning photography service...</div>
+                    <div class="item-card-price" th:text="'Starting at LKR ' + ${#numbers.formatDecimal(vendor.basePrice, 1, 'COMMA', 2, 'POINT')}">Starting at LKR 85,000.00</div>
+                </div>
+                <div class="item-card-footer">
+                    <a th:href="@{'/vendors/detail/' + ${vendor.vendorId}}" class="btn-secondary" style="padding: 6px 12px; font-size: 0.8rem;"><i class="fa-solid fa-eye"></i> View</a>
+                    <div style="display: flex; gap: 8px;">
+                        <a th:href="@{'/vendors/edit/' + ${vendor.vendorId}}" class="btn-secondary" style="padding: 6px 10px; font-size: 0.8rem; color: var(--accent-gold);"><i class="fa-solid fa-pen-to-square"></i></a>
+                        <a th:href="@{'/vendors/delete/' + ${vendor.vendorId}}" onclick="return confirm('Are you sure you want to delete this vendor profile?');" class="btn-secondary" style="padding: 6px 10px; font-size: 0.8rem; color: var(--accent-red);"><i class="fa-solid fa-trash"></i></a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+</div>
+
+<script th:src="@{/js/main.js}"></script>
+</body>
+</html>

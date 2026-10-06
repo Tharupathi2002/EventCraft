@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bookings &amp; Requests - EventCraft</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+
+<div class="app-container">
+    <div th:replace="~{layout/sidebar :: sidebar('bookings')}"></div>
+
+    <main class="main-wrapper">
+        <header class="top-header">
+            <div class="header-greeting">
+                <h1>Bookings &amp; Reservation Requests</h1>
+                <p>Track vendor and venue booking requests, dates, pricing, and confirm status.</p>
+            </div>
+            <a th:href="@{/bookings/new}" class="btn-primary"><i class="fa-solid fa-plus"></i> Create Booking Request</a>
+        </header>
+
+        <!-- Flash Messages -->
+        <div th:if="${successMessage}" class="alert alert-success" th:text="${successMessage}"></div>
+        <div th:if="${errorMessage}" class="alert alert-danger" th:text="${errorMessage}"></div>
+
+        <!-- Filter Tab Buttons -->
+        <div style="display: flex; gap: 10px; margin-bottom: 12px;">
+            <a th:href="@{/bookings}" class="btn-secondary" th:classappend="${selectedStatus == null || selectedStatus == ''} ? 'active'" style="font-size: 0.85rem;">All Bookings</a>
+            <a th:href="@{/bookings(status='PENDING')}" class="btn-secondary" th:classappend="${selectedStatus == 'PENDING'} ? 'active'" style="font-size: 0.85rem; color: var(--accent-gold);">Pending Approval</a>
+            <a th:href="@{/bookings(status='CONFIRMED')}" class="btn-secondary" th:classappend="${selectedStatus == 'CONFIRMED'} ? 'active'" style="font-size: 0.85rem; color: var(--accent-green);">Confirmed</a>
+            <a th:href="@{/bookings(status='CANCELLED')}" class="btn-secondary" th:classappend="${selectedStatus == 'CANCELLED'} ? 'active'" style="font-size: 0.85rem; color: var(--accent-red);">Cancelled</a>
+        </div>
+
+        <!-- Bookings Table -->
+        <div class="card">
+            <div class="data-table-wrapper">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Ref ID</th>
+                            <th>Type</th>
+                            <th>Target Resource (Venue/Vendor)</th>
+                            <th>Host Name &amp; Contact</th>
+                            <th>Event Date</th>
+                            <th>Amount</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="booking : ${bookings}">
+                            <td th:text="'BK-' + ${booking.bookingId}">BK-101</td>
+                            <td>
+                                <span th:if="${booking.bookingType == 'VENUE'}" style="color: var(--accent-amber); font-weight: 600;"><i class="fa-solid fa-building"></i> Venue</span>
+                                <span th:if="${booking.bookingType == 'VENDOR'}" style="color: var(--accent-gold); font-weight: 600;"><i class="fa-solid fa-store"></i> Vendor</span>
+                            </td>
+                            <td>
+                                <strong th:if="${booking.venue != null}" th:text="${booking.venue.name}">Grand Cinnamon</strong>
+                                <strong th:if="${booking.vendor != null}" th:text="${booking.vendor.businessName}">Aura Photography</strong>
+                                <div style="font-size: 0.75rem; color: var(--text-muted);" th:text="${booking.specialRequirements != null ? booking.specialRequirements : 'No notes'}">Requirements</div>
+                            </td>
+                            <td>
+                                <div th:text="${booking.hostName}">Sujeewan A.</div>
+                                <div style="font-size: 0.75rem; color: var(--text-muted);" th:text="${booking.hostEmail}">sujeewan@gmail.com</div>
+                            </td>
+                            <td th:text="${#temporals.format(booking.eventDate, 'MMM dd, yyyy')}">Nov 20, 2026</td>
+                            <td style="font-weight: 700; color: var(--accent-gold);" th:text="'LKR ' + ${#numbers.formatDecimal(booking.amount, 1, 'COMMA', 2, 'POINT')}">LKR 250,000.00</td>
+                            <td>
+                                <span class="badge" th:classappend="${#strings.toLowerCase(booking.bookingStatus)}" th:text="${booking.bookingStatus}">PENDING</span>
+                            </td>
+                            <td>
+                                <div style="display: flex; gap: 6px;">
+                                    <!-- Confirm Button Form -->
+                                    <form th:if="${booking.bookingStatus != 'CONFIRMED'}" th:action="@{/bookings/status}" method="post" style="display: inline;">
+                                        <input type="hidden" name="bookingId" th:value="${booking.bookingId}" />
+                                        <input type="hidden" name="status" value="CONFIRMED" />
+                                        <button type="submit" class="btn-secondary" style="padding: 4px 8px; font-size: 0.75rem; color: var(--accent-green);" title="Confirm Booking"><i class="fa-solid fa-check"></i></button>
+                                    </form>
+
+                                    <!-- Cancel Button Form -->
+                                    <form th:if="${booking.bookingStatus != 'CANCELLED'}" th:action="@{/bookings/status}" method="post" style="display: inline;">
+                                        <input type="hidden" name="bookingId" th:value="${booking.bookingId}" />
+                                        <input type="hidden" name="status" value="CANCELLED" />
+                                        <button type="submit" class="btn-secondary" style="padding: 4px 8px; font-size: 0.75rem; color: var(--accent-red);" title="Cancel Booking"><i class="fa-solid fa-xmark"></i></button>
+                                    </form>
+
+                                    <!-- Delete Button -->
+                                    <a th:href="@{'/bookings/delete/' + ${booking.bookingId}}" onclick="return confirm('Delete this booking record?');" class="btn-secondary" style="padding: 4px 8px; font-size: 0.75rem; color: var(--text-muted);" title="Delete"><i class="fa-solid fa-trash"></i></a>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+</div>
+
+<script th:src="@{/js/main.js}"></script>
+</body>
+</html>

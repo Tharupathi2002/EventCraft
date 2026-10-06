@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Venue Details - EventCraft</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+
+<div class="app-container">
+    <div th:replace="~{layout/sidebar :: sidebar('venues')}"></div>
+
+    <main class="main-wrapper">
+        <header class="top-header">
+            <div class="header-greeting">
+                <h1 th:text="${venue.name}">Grand Cinnamon Ballroom</h1>
+                <p><i class="fa-solid fa-location-dot" style="color: var(--accent-amber);"></i> <span th:text="${venue.street} + ', ' + ${venue.city}">77 Galle Road, Colombo 03</span></p>
+            </div>
+            <div style="display: flex; gap: 12px;">
+                <a th:href="@{/venues}" class="btn-secondary"><i class="fa-solid fa-arrow-left"></i> Back</a>
+                <a th:href="@{'/venues/edit/' + ${venue.venueId}}" class="btn-secondary" style="color: var(--accent-gold);"><i class="fa-solid fa-pen-to-square"></i> Edit</a>
+            </div>
+        </header>
+
+        <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 24px;">
+            <!-- Left: Venue Photos & Details -->
+            <div style="display: flex; flex-direction: column; gap: 20px;">
+                <div class="card" style="padding: 0; overflow: hidden;">
+                    <img th:src="${venue.imageUrl}" style="width: 100%; height: 350px; object-fit: cover;">
+                    <div style="padding: 24px;">
+                        <h3 style="margin-bottom: 12px;">About Venue &amp; Facilities</h3>
+                        <p style="color: var(--text-muted); line-height: 1.6;" th:text="${venue.description}">A luxurious ballroom with panoramic sea views...</p>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h3>Venue Specifications</h3>
+                    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-top: 12px;">
+                        <div class="user-profile-card" style="background: var(--bg-secondary);">
+                            <i class="fa-solid fa-users" style="font-size: 1.5rem; color: var(--accent-amber);"></i>
+                            <div>
+                                <div style="font-size: 0.75rem; color: var(--text-muted);">Max Capacity</div>
+                                <div style="font-weight: 700; font-size: 1.1rem;" th:text="${venue.capacity} + ' Guests'">450 Guests</div>
+                            </div>
+                        </div>
+
+                        <div class="user-profile-card" style="background: var(--bg-secondary);">
+                            <i class="fa-solid fa-star" style="font-size: 1.5rem; color: var(--accent-gold);"></i>
+                            <div>
+                                <div style="font-size: 0.75rem; color: var(--text-muted);">Rating Score</div>
+                                <div style="font-weight: 700; font-size: 1.1rem;" th:text="${venue.rating} + ' / 5.0'">4.9 / 5.0</div>
+                            </div>
+                        </div>
+
+                        <div class="user-profile-card" style="background: var(--bg-secondary);">
+                            <i class="fa-solid fa-tag" style="font-size: 1.5rem; color: var(--accent-green);"></i>
+                            <div>
+                                <div style="font-size: 0.75rem; color: var(--text-muted);">Daily Rental</div>
+                                <div style="font-weight: 700; font-size: 1.1rem; color: var(--accent-gold);" th:text="'LKR ' + ${#numbers.formatDecimal(venue.ratePerDay, 1, 'COMMA', 2, 'POINT')}">LKR 250,000.00</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right: Instant Booking Request Box -->
+            <div class="card" style="height: fit-content;">
+                <h3 style="margin-bottom: 16px;">Request Venue Booking</h3>
+                <form th:action="@{/bookings/save}" th:object="${booking}" method="post">
+                    <input type="hidden" th:field="*{venueId}" />
+                    <input type="hidden" th:field="*{bookingType}" />
+
+                    <div class="form-group">
+                        <label>Host Name *</label>
+                        <input type="text" th:field="*{hostName}" class="form-control" placeholder="Your full name" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Host Email *</label>
+                        <input type="email" th:field="*{hostEmail}" class="form-control" placeholder="name@domain.com" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Target Event Date *</label>
+                        <input type="date" th:field="*{eventDate}" class="form-control" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Quoted Amount (LKR)</label>
+                        <input type="number" step="0.01" th:field="*{amount}" class="form-control" readonly style="background: #2b211a; color: var(--accent-gold); font-weight: bold;">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Special Notes &amp; Setup Requirements</label>
+                        <textarea th:field="*{specialRequirements}" class="form-control" rows="3" placeholder="Stage setup, lighting requests..."></textarea>
+                    </div>
+
+                    <button type="submit" class="btn-primary" style="width: 100%; justify-content: center; padding: 12px; margin-top: 10px;">
+                        <i class="fa-solid fa-paper-plane"></i> Submit Booking Request
+                    </button>
+                </form>
+            </div>
+        </div>
+    </main>
+</div>
+
+<script th:src="@{/js/main.js}"></script>
+</body>
+</html>

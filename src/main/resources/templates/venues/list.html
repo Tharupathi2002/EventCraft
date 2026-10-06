@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Venues - EventCraft</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+
+<div class="app-container">
+    <div th:replace="~{layout/sidebar :: sidebar('venues')}"></div>
+
+    <main class="main-wrapper">
+        <header class="top-header">
+            <div class="header-greeting">
+                <h1>Venue Management Directory</h1>
+                <p>Explore, register, and manage event venue listings, capacities, and rates.</p>
+            </div>
+            <a th:href="@{/venues/new}" class="btn-primary"><i class="fa-solid fa-plus"></i> Add New Venue</a>
+        </header>
+
+        <!-- Flash Messages -->
+        <div th:if="${successMessage}" class="alert alert-success" th:text="${successMessage}"></div>
+        <div th:if="${errorMessage}" class="alert alert-danger" th:text="${errorMessage}"></div>
+
+        <!-- Filter Search Bar -->
+        <div class="card" style="padding: 16px;">
+            <form th:action="@{/venues}" method="get" style="display: flex; gap: 16px; align-items: center; flex-wrap: wrap;">
+                <div class="search-box" style="flex: 1; min-width: 200px;">
+                    <i class="fa-solid fa-magnifying-glass"></i>
+                    <input type="text" name="keyword" th:value="${keyword}" placeholder="Search venue name or location..." style="width: 100%;">
+                </div>
+                <div style="min-width: 160px;">
+                    <input type="text" name="city" th:value="${city}" placeholder="Filter by City (e.g. Kotte)" class="form-control" style="padding: 10px 14px;">
+                </div>
+                <button type="submit" class="btn-primary" style="padding: 10px 20px;"><i class="fa-solid fa-filter"></i> Filter</button>
+                <a th:href="@{/venues}" class="btn-secondary" style="padding: 10px 16px;">Reset</a>
+            </form>
+        </div>
+
+        <!-- Venues Grid -->
+        <div class="cards-grid">
+            <div th:each="venue : ${venues}" class="item-card">
+                <img th:src="${venue.imageUrl}" class="item-card-img" alt="Venue Photo">
+                <div class="item-card-body">
+                    <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                        <a th:href="@{'/venues/detail/' + ${venue.venueId}}" class="item-card-title" th:text="${venue.name}">Grand Cinnamon Ballroom</a>
+                        <span class="badge" th:classappend="${#strings.toLowerCase(venue.status)}" th:text="${venue.status}">AVAILABLE</span>
+                    </div>
+                    <div class="item-card-sub"><i class="fa-solid fa-location-dot" style="color: var(--accent-amber);"></i> <span th:text="${venue.street} + ', ' + ${venue.city}">77 Galle Road, Colombo 03</span></div>
+                    <div style="display: flex; gap: 16px; margin: 6px 0; font-size: 0.85rem; color: var(--text-muted);">
+                        <span><i class="fa-solid fa-users"></i> Cap: <strong style="color: var(--text-main);" th:text="${venue.capacity}">450</strong></span>
+                        <span><i class="fa-solid fa-star" style="color: var(--accent-gold);"></i> <strong style="color: var(--text-main);" th:text="${venue.rating}">4.9</strong></span>
+                    </div>
+                    <div class="item-card-price" th:text="'LKR ' + ${#numbers.formatDecimal(venue.ratePerDay, 1, 'COMMA', 2, 'POINT')} + ' / day'">LKR 250,000.00 / day</div>
+                </div>
+                <div class="item-card-footer">
+                    <a th:href="@{'/venues/detail/' + ${venue.venueId}}" class="btn-secondary" style="padding: 6px 12px; font-size: 0.8rem;"><i class="fa-solid fa-eye"></i> View</a>
+                    <div style="display: flex; gap: 8px;">
+                        <a th:href="@{'/venues/edit/' + ${venue.venueId}}" class="btn-secondary" style="padding: 6px 10px; font-size: 0.8rem; color: var(--accent-gold);"><i class="fa-solid fa-pen-to-square"></i></a>
+                        <a th:href="@{'/venues/delete/' + ${venue.venueId}}" onclick="return confirm('Are you sure you want to delete this venue listing?');" class="btn-secondary" style="padding: 6px 10px; font-size: 0.8rem; color: var(--accent-red);"><i class="fa-solid fa-trash"></i></a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+</div>
+
+<script th:src="@{/js/main.js}"></script>
+</body>
+</html>

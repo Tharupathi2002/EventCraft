@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+
+<!-- Sidebar Fragment -->
+<div th:fragment="sidebar(activeTab)" class="sidebar">
+    <div>
+        <div class="brand">
+            <div class="brand-icon"><i class="fa-solid fa-cube"></i></div>
+            <div>
+                <div class="brand-title">EventCraft</div>
+                <div class="brand-sub">Vendor &amp; Venue Portal</div>
+            </div>
+        </div>
+
+        <ul class="nav-menu">
+            <li class="nav-item" th:classappend="${activeTab == 'venues'} ? 'active'">
+                <a th:href="@{/venues}"><i class="fa-solid fa-building"></i> Venues</a>
+            </li>
+            <li class="nav-item" th:classappend="${activeTab == 'vendors'} ? 'active'">
+                <a th:href="@{/vendors}"><i class="fa-solid fa-store"></i> Vendors</a>
+            </li>
+            <li class="nav-item" th:classappend="${activeTab == 'bookings'} ? 'active'">
+                <a th:href="@{/bookings}"><i class="fa-solid fa-calendar-check"></i> Bookings &amp; Requests</a>
+            </li>
+        </ul>
+    </div>
+
+    <div class="user-profile-card">
+        <div class="avatar">AU</div>
+        <div class="user-info">
+            <div class="name">Alvitigala H.M.</div>
+            <div class="role">Member 3 - Host/Admin</div>
+        </div>
+    </div>
+</div>
+
+</body>
+</html>

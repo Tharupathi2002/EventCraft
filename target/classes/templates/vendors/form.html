@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vendor Form - EventCraft</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+
+<div class="app-container">
+    <div th:replace="~{layout/sidebar :: sidebar('vendors')}"></div>
+
+    <main class="main-wrapper">
+        <header class="top-header">
+            <div class="header-greeting">
+                <h1 th:text="${pageTitle}">Add New Vendor</h1>
+                <p>Register vendor profile, service package rates, and business contact info.</p>
+            </div>
+            <a th:href="@{/vendors}" class="btn-secondary"><i class="fa-solid fa-arrow-left"></i> Back to Vendors</a>
+        </header>
+
+        <div class="card" style="max-width: 800px; margin: 0 auto;">
+            <form th:action="@{/vendors/save}" th:object="${vendor}" method="post">
+                <input type="hidden" th:field="*{vendorId}" />
+
+                <div class="form-group">
+                    <label>Business Name *</label>
+                    <input type="text" th:field="*{businessName}" class="form-control" placeholder="e.g. Aura Cinematic Photography">
+                    <div class="field-error" th:if="${#fields.hasErrors('businessName')}" th:errors="*{businessName}"></div>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                    <div class="form-group">
+                        <label>Service Category *</label>
+                        <select th:field="*{serviceType}" class="form-control">
+                            <option value="Catering">Catering</option>
+                            <option value="Photography">Photography</option>
+                            <option value="Decor">Decor &amp; Florals</option>
+                            <option value="Music/DJ">Music &amp; DJ</option>
+                            <option value="Event Planner">Event Planner</option>
+                        </select>
+                        <div class="field-error" th:if="${#fields.hasErrors('serviceType')}" th:errors="*{serviceType}"></div>
+                    </div>
+                    <div class="form-group">
+                        <label>Contact Phone / Email *</label>
+                        <input type="text" th:field="*{contactInfo}" class="form-control" placeholder="e.g. +94 77 123 4567 | info@aura.lk">
+                        <div class="field-error" th:if="${#fields.hasErrors('contactInfo')}" th:errors="*{contactInfo}"></div>
+                    </div>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                    <div class="form-group">
+                        <label>Base Price (LKR) *</label>
+                        <input type="number" step="0.01" th:field="*{basePrice}" class="form-control" placeholder="e.g. 850.00">
+                        <div class="field-error" th:if="${#fields.hasErrors('basePrice')}" th:errors="*{basePrice}"></div>
+                    </div>
+                    <div class="form-group">
+                        <label>Status</label>
+                        <select th:field="*{status}" class="form-control">
+                            <option value="AVAILABLE">AVAILABLE</option>
+                            <option value="BUSY">BUSY</option>
+                            <option value="INACTIVE">INACTIVE</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Cover / Profile Image URL</label>
+                    <input type="url" th:field="*{imageUrl}" class="form-control" placeholder="https://images.unsplash.com/photo-...">
+                </div>
+
+                <div class="form-group">
+                    <label>Services Offered &amp; Portfolio Overview</label>
+                    <textarea th:field="*{description}" class="form-control" rows="4" placeholder="Describe packages, menu items, camera gear, or performance styles..."></textarea>
+                </div>
+
+                <div style="display: flex; gap: 12px; justify-content: flex-end; margin-top: 20px;">
+                    <a th:href="@{/vendors}" class="btn-secondary">Cancel</a>
+                    <button type="submit" class="btn-primary"><i class="fa-solid fa-floppy-disk"></i> Save Vendor Profile</button>
+                </div>
+            </form>
+        </div>
+    </main>
+</div>
+
+<script th:src="@{/js/main.js}"></script>
+</body>
+</html>

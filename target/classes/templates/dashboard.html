@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EventCraft - Vendor &amp; Venue Dashboard</title>
+    
+    <!-- FontAwesome 6 Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Font Plus Jakarta Sans -->
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+
+<div class="app-container">
+    <!-- Include Sidebar Fragment -->
+    <div th:replace="~{layout/sidebar :: sidebar('dashboard')}"></div>
+
+    <!-- Main Content Area -->
+    <main class="main-wrapper">
+        <!-- Header -->
+        <header class="top-header">
+            <div class="header-greeting">
+                <h1>Welcome back, Admin! 👋</h1>
+                <p>Here's what's happening with your vendor and venue bookings today.</p>
+            </div>
+            <div class="header-actions">
+                <div class="search-box">
+                    <i class="fa-solid fa-magnifying-glass"></i>
+                    <input type="text" placeholder="Search venues, vendors, bookings...">
+                </div>
+                <a th:href="@{/bookings/new}" class="btn-primary"><i class="fa-solid fa-plus"></i> New Booking</a>
+            </div>
+        </header>
+
+        <!-- Metric Cards -->
+        <section class="metrics-grid">
+            <div class="metric-card">
+                <div class="metric-icon amber"><i class="fa-solid fa-building"></i></div>
+                <div class="metric-info">
+                    <div class="label">Total Venues</div>
+                    <div class="value" th:text="${totalVenues}">4</div>
+                    <div class="trend up"><i class="fa-solid fa-arrow-up"></i> +12.5% from last month</div>
+                </div>
+            </div>
+
+            <div class="metric-card">
+                <div class="metric-icon gold"><i class="fa-solid fa-store"></i></div>
+                <div class="metric-info">
+                    <div class="label">Total Vendors</div>
+                    <div class="value" th:text="${totalVendors}">4</div>
+                    <div class="trend up"><i class="fa-solid fa-arrow-up"></i> +8.4% from last month</div>
+                </div>
+            </div>
+
+            <div class="metric-card">
+                <div class="metric-icon red"><i class="fa-solid fa-calendar-check"></i></div>
+                <div class="metric-info">
+                    <div class="label">Active Bookings</div>
+                    <div class="value" th:text="${activeBookings}">2</div>
+                    <div class="trend down"><i class="fa-solid fa-clock"></i> 2 pending approval</div>
+                </div>
+            </div>
+
+            <div class="metric-card">
+                <div class="metric-icon green"><i class="fa-solid fa-dollar-sign"></i></div>
+                <div class="metric-info">
+                    <div class="label">Total Spending</div>
+                    <div class="value" th:text="'LKR ' + ${#numbers.formatDecimal(totalSpending, 1, 'COMMA', 2, 'POINT')}">LKR 335,000.00</div>
+                    <div class="trend up"><i class="fa-solid fa-arrow-up"></i> +10.3% from last month</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Dashboard Two Column Grid -->
+        <section class="dashboard-grid">
+            <!-- Left Column: Line Chart & Recent Bookings -->
+            <div style="display: flex; flex-direction: column; gap: 24px;">
+                <!-- Booking Trend Chart Card -->
+                <div class="card">
+                    <div class="card-header">
+                        <h3>Booking Activity Overview</h3>
+                        <span style="font-size: 0.8rem; color: var(--text-muted);">Last 6 Months</span>
+                    </div>
+                    <div style="height: 220px; position: relative;">
+                        <canvas id="bookingTrendChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Recent Bookings Table Card -->
+                <div class="card">
+                    <div class="card-header">
+                        <h3>Recent Booking Transactions</h3>
+                        <a th:href="@{/bookings}" class="btn-secondary" style="padding: 6px 12px; font-size: 0.8rem;">View All</a>
+                    </div>
+                    <div class="data-table-wrapper">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Type</th>
+                                    <th>Host / Event</th>
+                                    <th>Event Date</th>
+                                    <th>Amount</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr th:each="booking : ${recentBookings}">
+                                    <td th:text="'TRX-00' + ${booking.bookingId}">TRX-001</td>
+                                    <td>
+                                        <span th:if="${booking.bookingType == 'VENUE'}" style="color: var(--accent-amber);"><i class="fa-solid fa-building"></i> Venue</span>
+                                        <span th:if="${booking.bookingType == 'VENDOR'}" style="color: var(--accent-gold);"><i class="fa-solid fa-store"></i> Vendor</span>
+                                    </td>
+                                    <td th:text="${booking.hostName}">Sujeewan A.</td>
+                                    <td th:text="${#temporals.format(booking.eventDate, 'MMM dd, yyyy')}">Nov 20, 2026</td>
+                                    <td th:text="'LKR ' + ${#numbers.formatDecimal(booking.amount, 1, 'COMMA', 2, 'POINT')}">LKR 250,000.00</td>
+                                    <td>
+                                        <span class="badge" th:classappend="${#strings.toLowerCase(booking.bookingStatus)}" th:text="${booking.bookingStatus}">CONFIRMED</span>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Column: Category Breakdown & Low Availability Alerts -->
+            <div style="display: flex; flex-direction: column; gap: 24px;">
+                <!-- Category Breakdown Card -->
+                <div class="card">
+                    <div class="card-header">
+                        <h3>Top Vendor Categories</h3>
+                    </div>
+                    <div style="height: 220px; position: relative;">
+                        <canvas id="categoryDonutChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Availability & Featured Venues Card -->
+                <div class="card">
+                    <div class="card-header">
+                        <h3>Top Venue Availability</h3>
+                        <a th:href="@{/venues}" class="btn-secondary" style="padding: 6px 12px; font-size: 0.8rem;">Browse</a>
+                    </div>
+                    <div style="display: flex; flex-direction: column; gap: 14px;">
+                        <div th:each="venue : ${venues}" class="user-profile-card" style="background: var(--bg-secondary);">
+                            <img th:src="${venue.imageUrl}" style="width: 44px; height: 44px; border-radius: var(--radius-sm); object-fit: cover;">
+                            <div style="flex: 1;">
+                                <div style="font-weight: 600; font-size: 0.88rem;" th:text="${venue.name}">Grand Cinnamon</div>
+                                <div style="font-size: 0.75rem; color: var(--text-muted);" th:text="${venue.city} + ' • Cap: ' + ${venue.capacity}">Colombo 03 • Cap: 450</div>
+                            </div>
+                            <span class="badge" th:classappend="${#strings.toLowerCase(venue.status)}" th:text="${venue.status}">AVAILABLE</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+</div>
+
+<!-- Scripts -->
+<script th:src="@{/js/main.js}"></script>
+</body>
+</html>

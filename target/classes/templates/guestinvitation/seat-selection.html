@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Select Your Seat</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body { background-color: #1a1a1a; color: white; }
+        .cinema-container { max-width: 700px; margin: 50px auto; background-color: #2b2b2b; padding: 30px; border-radius: 10px; }
+        .screen { background-color: #fff; color: #000; text-align: center; padding: 10px; margin-bottom: 40px; font-weight: bold; border-radius: 5px; box-shadow: 0 5px 15px rgba(255,255,255,0.2); }
+        .seat { width: 45px; height: 45px; margin: 5px; display: inline-flex; justify-content: center; align-items: center; cursor: pointer; border-radius: 5px; font-weight: bold; font-size: 0.8rem; transition: transform 0.1s; }
+        .seat:hover:not(.taken) { transform: scale(1.1); }
+
+        /* Seat Colors */
+        .available { background-color: #28a745; color: white; border: 2px solid #1e7e34; }
+        .taken { background-color: #dc3545; color: white; cursor: not-allowed; opacity: 0.7; }
+        .selected { background-color: #ffc107; color: black; border: 2px solid #d39e00; }
+
+        .row-container { display: flex; justify-content: center; margin-bottom: 10px; }
+        .legend-box { width: 20px; height: 20px; display: inline-block; border-radius: 3px; margin-right: 5px; vertical-align: middle; }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="cinema-container shadow">
+        <h3 class="text-center text-warning mb-4">Event Seat Selection</h3>
+
+        <div class="screen">STAGE / SCREEN</div>
+
+        <!-- Generate the Grid -->
+        <div class="row-container" th:each="row : ${rows}">
+            <div th:each="col : ${cols}">
+                <!-- Determine if seat is taken using Thymeleaf -->
+                <div th:with="seatId=${row + col}">
+                    <div th:id="${seatId}"
+                         class="seat"
+                         th:classappend="${#lists.contains(takenSeats, seatId) ? 'taken' : 'available'}"
+                         th:text="${seatId}"
+                         th:onclick="${!#lists.contains(takenSeats, seatId)} ? 'selectSeat(this.id)' : ''">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Legend -->
+        <div class="d-flex justify-content-center gap-4 mt-5 mb-4">
+            <div><span class="legend-box bg-success"></span> Available</div>
+            <div><span class="legend-box bg-warning"></span> Selected</div>
+            <div><span class="legend-box bg-danger"></span> Unavailable</div>
+        </div>
+
+        <!-- Hidden Form to Submit Choice -->
+        <form th:action="@{/guest/rsvp}" method="post" class="text-center" id="seatForm">
+            <input type="hidden" name="invitationId" th:value="${invitationId}" />
+            <input type="hidden" name="seatNumber" id="selectedSeatInput" required />
+            <button type="submit" class="btn btn-warning px-5 fw-bold" id="proceedBtn" disabled>Proceed</button>
+        </form>
+    </div>
+</div>
+
+<!-- Interactive JavaScript -->
+<script>
+    let currentlySelected = null;
+
+    function selectSeat(seatId) {
+        // Deselect previous seat if one was clicked
+        if (currentlySelected) {
+            document.getElementById(currentlySelected).classList.remove('selected');
+            document.getElementById(currentlySelected).classList.add('available');
+        }
+
+        // Select the new seat
+        const seatElement = document.getElementById(seatId);
+        seatElement.classList.remove('available');
+        seatElement.classList.add('selected');
+        currentlySelected = seatId;
+
+        // Update hidden form and enable button
+        document.getElementById('selectedSeatInput').value = seatId;
+        document.getElementById('proceedBtn').disabled = false;
+    }
+</script>
+</body>
+</html>

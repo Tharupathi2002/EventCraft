@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Guest Dashboard</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="bg-light">
+<div class="container mt-5">
+    <h2 class="mb-4 text-primary" th:text="'Welcome back, ' + ${guestName}"></h2>
+
+    <div class="card shadow-sm">
+        <div class="card-header bg-white">
+            <h4 class="mb-0">Your Event Invitations</h4>
+        </div>
+        <div class="card-body p-0">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light">
+                <tr>
+                    <th>Event Name</th>
+                    <th>Status</th>
+                    <th>Action</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="inv : ${invitations}">
+                    <td class="fw-bold" th:text="${inv.event.eventName}"></td>
+                    <td>
+                                <span class="badge"
+                                      th:classappend="${inv.rsvpStatus == 'ACCEPTED' ? 'bg-success' : (inv.rsvpStatus == 'DECLINED' ? 'bg-danger' : 'bg-warning text-dark')}"
+                                      th:text="${inv.rsvpStatus}">
+                                </span>
+                    </td>
+                    <td>
+                        <div th:if="${inv.rsvpStatus == 'PENDING'}">
+                            <form th:if="${inv.rsvpStatus == 'PENDING'}" th:action="@{/guest/seat-selection}" method="post" class="d-inline">
+                                <input type="hidden" name="invitationId" th:value="${inv.id}" />
+                                <!-- Disable Accept button if seats are 0 -->
+                                <button type="submit" name="status" value="ACCEPTED"
+                                        class="btn btn-success btn-sm"
+                                        th:disabled="${inv.event.seatsAvailable <= 0}">
+                                    <span th:text="${inv.event.seatsAvailable > 0 ? 'Accept' : 'Event Full'}"></span>
+                                </button>
+                                <button type="submit" name="status" value="DECLINED"
+                                        class="btn btn-outline-danger btn-sm ms-1">Decline</button>
+                            </form>
+                        </div>
+                        <span th:if="${inv.rsvpStatus != 'PENDING'}" class="text-muted small">No action needed</span>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+</body>
+</html>

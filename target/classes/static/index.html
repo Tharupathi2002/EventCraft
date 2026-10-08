@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EventCraft - Task & Schedule Management</title>
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+
+    <!-- Top Navigation Bar -->
+    <header class="navbar">
+        <div class="brand-container">
+            <div class="brand-logo">EC</div>
+            <div>
+                <h1 class="brand-title">EventCraft</h1>
+                <p class="brand-subtitle">Personalized Event Planning Platform</p>
+            </div>
+        </div>
+        <div class="nav-badges">
+            <span class="badge-module">SE2030 • Module 5</span>
+            <span class="badge-module">UC-17: Task &amp; Schedule Management</span>
+        </div>
+    </header>
+
+    <!-- Event Context & Live Metrics Banner -->
+    <section class="event-bar">
+        <div class="event-info">
+            <span class="event-tag">Current Event #1</span>
+            <div>
+                <span class="event-name" id="currentEventTitle">Tech Innovators Summit 2026</span>
+                <span class="event-host">• Host: Sarah Jenkins</span>
+            </div>
+        </div>
+
+        <div class="metrics-strip">
+            <div class="metric-pill">
+                <span>Total Tasks:</span> <strong id="metricTotal">0</strong>
+            </div>
+            <div class="metric-pill">
+                <span>Completed:</span> <strong id="metricCompleted" style="color: var(--success);">0</strong>
+            </div>
+            <div class="metric-pill">
+                <span>Pending:</span> <strong id="metricPending" style="color: var(--warning);">0</strong>
+            </div>
+            <div class="metric-pill">
+                <span>Progress:</span> <strong id="metricProgress">0%</strong>
+            </div>
+        </div>
+    </section>
+
+    <!-- Main Workspace -->
+    <main class="main-content">
+        
+        <!-- Navigation Tabs -->
+        <nav class="view-tabs">
+            <button class="tab-btn active" id="tabTasksBtn">
+                <span>📋 Task Management</span>
+                <span class="tab-badge" id="tasksBadge">0</span>
+            </button>
+            <button class="tab-btn" id="tabSchedulesBtn">
+                <span>⏱ Schedule &amp; Timeline</span>
+                <span class="tab-badge" id="schedulesBadge">0</span>
+            </button>
+        </nav>
+
+        <!-- =============================================================== -->
+        <!-- VIEW 1: Task Management                                         -->
+        <!-- =============================================================== -->
+        <section id="tasksView">
+            <div class="section-header">
+                <div class="section-title-group">
+                    <h2>Event Tasks &amp; Milestones</h2>
+                    <p>Track deadlines, collaborate with team members, and monitor progress</p>
+                </div>
+                <div class="action-group">
+                    <select class="filter-select" id="taskStatusFilter">
+                        <option value="">All Statuses</option>
+                        <option value="Pending">Pending</option>
+                        <option value="In Progress">In Progress</option>
+                        <option value="Completed">Completed</option>
+                    </select>
+                    <button class="btn btn-primary" id="btnOpenCreateTask">
+                        <span>+</span> Create New Task
+                    </button>
+                </div>
+            </div>
+
+            <!-- Dynamic Tasks Grid -->
+            <div class="tasks-grid" id="tasksContainer">
+                <!-- Task cards rendered dynamically by app.js -->
+            </div>
+        </section>
+
+        <!-- =============================================================== -->
+        <!-- VIEW 2: Schedule & Timeline Management                          -->
+        <!-- =============================================================== -->
+        <section id="schedulesView" style="display: none;">
+            <div class="section-header">
+                <div class="section-title-group">
+                    <h2>Event Timeline &amp; Agenda</h2>
+                    <p>Organize sessions, keynotes, breaks, and detect scheduling conflicts</p>
+                </div>
+                <div class="action-group">
+                    <button class="btn btn-primary" id="btnOpenCreateSchedule">
+                        <span>+</span> Add Timeline Activity
+                    </button>
+                </div>
+            </div>
+
+            <!-- Dynamic Timeline Container -->
+            <div id="schedulesContainer">
+                <!-- Timeline items rendered dynamically by app.js -->
+            </div>
+        </section>
+
+    </main>
+
+    <!-- =================================================================== -->
+    <!-- MODAL 1: Create / Edit Task                                         -->
+    <!-- =================================================================== -->
+    <dialog id="taskModal">
+        <div class="modal-header">
+            <h3 id="taskModalTitle">Create New Task</h3>
+            <button class="modal-close-btn" type="button" onclick="document.getElementById('taskModal').close()">&times;</button>
+        </div>
+        <form id="taskForm">
+            <div class="modal-body">
+                <input type="hidden" id="taskIdInput">
+
+                <div class="form-group">
+                    <label for="taskTitleInput">Task Title *</label>
+                    <input type="text" id="taskTitleInput" class="form-control" placeholder="e.g. Finalize Catering Menu" required maxlength="150">
+                </div>
+
+                <div class="form-group">
+                    <label for="taskDescInput">Description / Instructions</label>
+                    <textarea id="taskDescInput" class="form-control" rows="3" placeholder="Add specific task notes, instructions, or vendor contacts..."></textarea>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="taskDeadlineInput">Deadline (Date &amp; Time) *</label>
+                        <input type="datetime-local" id="taskDeadlineInput" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="taskPriorityInput">Priority *</label>
+                        <select id="taskPriorityInput" class="form-control" required>
+                            <option value="Low">Low</option>
+                            <option value="Medium" selected>Medium</option>
+                            <option value="High">High</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="taskAssigneeInput">Assign To (Collaborator)</label>
+                    <select id="taskAssigneeInput" class="form-control">
+                        <option value="">-- Unassigned --</option>
+                        <option value="1">Sarah Jenkins (Host)</option>
+                        <option value="2">Alex Rivera (Collaborator)</option>
+                        <option value="3">Priya Patel (Collaborator)</option>
+                    </select>
+                </div>
+
+                <!-- Edit Mode Fields: Progress & Status -->
+                <div class="form-group" id="taskProgressGroup" style="display: none;">
+                    <label for="taskProgressInput">
+                        Progress: <strong id="taskProgressVal" style="color: var(--primary);">0%</strong>
+                    </label>
+                    <input type="range" id="taskProgressInput" class="form-control" min="0" max="100" step="5" value="0" style="padding: 0; cursor: pointer;">
+                </div>
+
+                <div class="form-group" id="taskStatusGroup" style="display: none;">
+                    <label for="taskStatusInput">Status</label>
+                    <select id="taskStatusInput" class="form-control">
+                        <option value="Pending">Pending</option>
+                        <option value="In Progress">In Progress</option>
+                        <option value="Completed">Completed</option>
+                    </select>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" id="btnCancelTask">Cancel</button>
+                <button type="submit" class="btn btn-primary" id="btnSaveTask">Save Task</button>
+            </div>
+        </form>
+    </dialog>
+
+    <!-- =================================================================== -->
+    <!-- MODAL 2: Create / Edit Schedule Item                                -->
+    <!-- =================================================================== -->
+    <dialog id="scheduleModal">
+        <div class="modal-header">
+            <h3 id="scheduleModalTitle">Add Timeline Activity</h3>
+            <button class="modal-close-btn" type="button" onclick="document.getElementById('scheduleModal').close()">&times;</button>
+        </div>
+        <form id="scheduleForm">
+            <div class="modal-body">
+                <input type="hidden" id="scheduleIdInput">
+
+                <div class="form-group">
+                    <label for="activityNameInput">Activity / Session Name *</label>
+                    <input type="text" id="activityNameInput" class="form-control" placeholder="e.g. Opening Keynote: AI Innovations" required maxlength="150">
+                </div>
+
+                <div class="form-group">
+                    <label for="scheduleDescInput">Description / Agenda Details</label>
+                    <textarea id="scheduleDescInput" class="form-control" rows="2" placeholder="Brief outline of speakers, topics, or activities..."></textarea>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="startTimeInput">Start Time *</label>
+                        <input type="datetime-local" id="startTimeInput" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="endTimeInput">End Time *</label>
+                        <input type="datetime-local" id="endTimeInput" class="form-control" required>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="activityTypeInput">Activity Type *</label>
+                        <select id="activityTypeInput" class="form-control" required>
+                            <option value="Activity">Activity</option>
+                            <option value="Keynote">Keynote</option>
+                            <option value="Session">Session</option>
+                            <option value="Milestone">Milestone</option>
+                            <option value="Break">Break</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="locationInput">Location / Stage</label>
+                        <input type="text" id="locationInput" class="form-control" placeholder="e.g. Main Auditorium, Stage B" maxlength="100">
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" id="btnCancelSchedule">Cancel</button>
+                <button type="submit" class="btn btn-primary" id="btnSaveSchedule">Save Activity</button>
+            </div>
+        </form>
+    </dialog>
+
+    <!-- =================================================================== -->
+    <!-- MODAL 3: Destructive Delete Confirmation                            -->
+    <!-- =================================================================== -->
+    <dialog id="deleteModal">
+        <div class="modal-header">
+            <h3 style="color: var(--danger);">Confirm Deletion</h3>
+            <button class="modal-close-btn" type="button" onclick="document.getElementById('deleteModal').close()">&times;</button>
+        </div>
+        <div class="modal-body">
+            <p>Are you sure you want to permanently delete this item?</p>
+            <p style="margin-top: 8px; font-weight: 600; color: var(--gray-800);" id="deleteItemName"></p>
+            <p style="margin-top: 8px; font-size: 0.85rem; color: var(--gray-500);">
+                This action cannot be undone and will immediately delete the record from SQL Server.
+            </p>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" id="btnCancelDelete">Cancel</button>
+            <button type="button" class="btn btn-danger" id="btnConfirmDelete">Yes, Delete</button>
+        </div>
+    </dialog>
+
+    <!-- Toast Notifications Area -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <!-- Application Script -->
+    <script type="module" src="js/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EventCraft | Event Planning &amp; Customization</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,500&family=EB+Garamond:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<section class="hero-scene">
+    <div class="mountain-back"></div>
+    <div class="mountain-mid"></div>
+    <div class="mountain-front"></div>
+    <div class="floral-left" aria-hidden="true"></div>
+    <div class="floral-right" aria-hidden="true"></div>
+    <div class="hero-content">
+        <h1 class="hero-title">EventCraft</h1>
+        <p class="hero-tag">Plan the whole event without leaving one screen.</p>
+    </div>
+</section>
+
+<div class="app-shell">
+
+    <main class="workspace">
+
+        <!-- ===================== CREATE / EDIT FORM ===================== -->
+        <section class="glass panel form-panel">
+            <h2 id="formTitle">Create a new event</h2>
+
+            <form id="eventForm">
+                <input type="hidden" id="eventId">
+
+                <div class="form-row">
+                    <label for="hostUsername">Host username</label>
+                    <input type="text" id="hostUsername" placeholder="e.g. sujeewan" required>
+                </div>
+
+                <div class="form-row">
+                    <label for="eventName">Event name</label>
+                    <input type="text" id="eventName" placeholder="e.g. Amara &amp; Kasun's wedding" required>
+                </div>
+
+                <div class="form-row two-col">
+                    <div>
+                        <label for="eventType">Event type</label>
+                        <select id="eventType" required>
+                            <option value="" disabled selected>Select a template</option>
+                            <option value="WEDDING">Wedding</option>
+                            <option value="BIRTHDAY">Birthday</option>
+                            <option value="CORPORATE">Corporate</option>
+                            <option value="COMMUNITY">Community</option>
+                            <option value="OTHER">Other</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label for="eventDate">Event date</label>
+                        <input type="date" id="eventDate" required>
+                    </div>
+                </div>
+
+                <div class="form-row two-col">
+                    <div>
+                        <label for="theme">Theme</label>
+                        <input type="text" id="theme" placeholder="e.g. Beach sunset">
+                    </div>
+                    <div>
+                        <label for="visibility">Visibility</label>
+                        <select id="visibility">
+                            <option value="PRIVATE" selected>Private (invite only)</option>
+                            <option value="PUBLIC">Public (anyone with link)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <label for="coverImageUrl">Cover image URL <span class="hint">(optional)</span></label>
+                    <input type="text" id="coverImageUrl" placeholder="https://...">
+                </div>
+
+                <div class="form-row">
+                    <label for="description">Description</label>
+                    <textarea id="description" rows="3" placeholder="Brief description of the event"></textarea>
+                </div>
+
+                <div class="form-actions">
+                    <button type="submit" id="submitBtn" class="btn btn-primary">Save draft</button>
+                    <button type="button" id="cancelEditBtn" class="btn btn-ghost" style="display:none;">Cancel edit</button>
+                </div>
+            </form>
+
+            <p id="formMessage" class="form-message"></p>
+        </section>
+
+        <!-- ===================== EVENT LIST ===================== -->
+        <section class="glass panel list-panel">
+            <div class="list-header">
+                <h2>My events</h2>
+                <div class="filter-row">
+                    <input type="text" id="filterHost" placeholder="Filter by host username">
+                    <button id="filterBtn" class="btn btn-ghost btn-sm">Filter</button>
+                    <button id="clearFilterBtn" class="btn btn-ghost btn-sm">Show all</button>
+                </div>
+            </div>
+
+            <div id="eventList" class="event-grid">
+                <p class="empty-state">Loading events...</p>
+            </div>
+        </section>
+
+    </main>
+
+    <footer class="app-footer">
+        <p>EventCraft &mdash; SE2030 group project &mdash; Event planning and customization module</p>
+    </footer>
+
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>
